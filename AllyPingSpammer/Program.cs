@@ -52,7 +52,7 @@
                                 "Ally to be spammed",
                                 GameObjects.AllyHeroes.Where(ally => !ally.IsMe).Select(ally => ally.ChampionName())));
 
-                    var delay = root.Add(new MenuSlider(Header + "_delay", "Delay between attempts", 800, 200, 5000));
+                    var delay = root.Add(new MenuSlider(Header + "_delay", "Delay between attempts", 1200, 200, 5000));
 
                     var randomizer = root.Add(new MenuBool(Header + "_randomize", "^ Randomize delay"));
 
