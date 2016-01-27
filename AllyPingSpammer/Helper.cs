@@ -31,6 +31,8 @@ namespace SparkTech.Helpers
 
             switch (name.ToLower())
             {
+                case "fiddlesticks":
+                    return "Fiddlesticks";
                 case "chogath":
                     return "Cho'Gath";
                 case "drmundo":
