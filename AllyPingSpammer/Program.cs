@@ -10,26 +10,13 @@
     using LeagueSharp.SDK.Core.Utils;
 
     using SparkTech.Helpers;
-
-    /// <summary>
-    /// The <see cref="Program"/> class
-    /// </summary>
+    
     internal class Program
     {
         /// <summary>
-        /// The beginning for every menu item
+        /// The entry point of the assembly
         /// </summary>
-        private const string Header = "st_ally_ping";
-
-        /// <summary>
-        /// The <see cref="Random"/> instance
-        /// </summary>
-        private static readonly Random Random = new Random(Variables.TickCount);
-
-        /// <summary>
-        /// The entry point
-        /// </summary>
-        /// <param name="args">The empty string <see cref="Array"/></param>
+        /// <param name="args">The empty string array</param>
         private static void Main(string[] args)
         {
             if (args == null)
@@ -39,28 +26,23 @@
 
             Events.OnLoad += delegate
                 {
-                    bool shouldRandomize = false, shouldAssign = false;
-
+                    const string Header = "st_ally_ping";
+                    var shouldRandomize1 = false;
+                    var shouldRandomize2 = false;
+                    var shouldAssign = false;
+                    var random = new Random(Variables.TickCount);
                     var root = new Menu(Header, "[ST] Ally Ping Spammer", true).Attach();
-
                     var active = root.Add(new MenuBool(Header + "_active", "Active"));
-
-                    var hero =
-                        root.Add(
-                            new MenuList<string>(
-                                Header + "_hero",
-                                "Ally to be spammed",
-                                GameObjects.AllyHeroes.Where(ally => !ally.IsMe).Select(ally => ally.ChampionName())));
-
+                    var hero = root.Add(new MenuList<string>(Header + "_hero", "Ally to be spammed", GameObjects.AllyHeroes.Where(ally => !ally.IsMe).Select(ally => ally.ChampionName())));
                     var delay = root.Add(new MenuSlider(Header + "_delay", "Delay between attempts", 1200, 200, 5000));
-
-                    var randomizer = root.Add(new MenuBool(Header + "_randomize", "^ Randomize delay"));
-
+                    var randomizer1 = root.Add(new MenuBool(Header + "_randomize1", "^ Randomize delay"));
                     var ping = root.Add(new MenuList<PingCategory>(Header + "_pingtype", nameof(PingCategory)));
-
+                    var randomizer2 = root.Add(new MenuBool(Header + "_randomize2", "^ Randomize " + nameof(PingCategory)));
                     root.AddSeparator("Made by Spark");
 
-                    var operation = new TickOperation(delay.Value, delegate
+                    var operation = new TickOperation(
+                        delay.Value,
+                        delegate
                             {
                                 if (!active.Value)
                                 {
@@ -75,10 +57,15 @@
                                 {
                                     Game.SendPing(ping.SelectedValue, position.Value);
                                 }
-                                
-                                if (randomizer.Value)
+
+                                if (randomizer1.Value)
                                 {
-                                    shouldRandomize = true;
+                                    shouldRandomize1 = true;
+                                }
+
+                                if (randomizer2.Value)
+                                {
+                                    shouldRandomize2 = true;
                                 }
                             });
 
@@ -87,10 +74,17 @@
 
                     Game.OnUpdate += delegate
                         {
-                            if (shouldRandomize)
+                            if (shouldRandomize1)
                             {
-                                operation.TickDelay = delay.Value = Random.Next(200, 5000);
-                                shouldRandomize = false;
+                                shouldRandomize1 = false;
+                                operation.TickDelay = delay.Value = random.Next(200, 5000);
+                            }
+
+                            if (shouldRandomize2)
+                            {
+                                shouldRandomize2 = false;
+                                var array = Enum.GetValues(typeof(PingCategory));
+                                ping.SelectedValue = (PingCategory)array.GetValue(random.Next(0, array.Length - 1));
                             }
 
                             if (!shouldAssign)
@@ -98,8 +92,8 @@
                                 return;
                             }
 
-                            operation.TickDelay = delay.Value;
                             shouldAssign = false;
+                            operation.TickDelay = delay.Value;
                         };
                 };
         }
