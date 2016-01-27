@@ -2,6 +2,7 @@
 // ReSharper disable once CheckNamespace
 namespace SparkTech.Helpers
 {
+    using System;
     using System.Linq;
     using System.Text.RegularExpressions;
 
@@ -10,11 +11,15 @@ namespace SparkTech.Helpers
     using LeagueSharp.SDK.Core.UI.IMenu.Abstracts;
     using LeagueSharp.SDK.Core.UI.IMenu.Values;
 
+    using SharpDX;
+
     /// <summary>
     /// Provides miscallenous methods and extensions
     /// </summary>
     public static class Helper
     {
+        private static Random Random => AllyPingSpammer.Program.Random;
+
         private static ushort i;
 
         /// <summary>
@@ -110,6 +115,35 @@ namespace SparkTech.Helpers
         public static bool FullHD()
         {
             return Drawing.Height == 1920 && Drawing.Width == 1080;
+        }
+
+        /// <summary>
+        /// Randomizes a <see cref="Vector3"/>
+        /// </summary>
+        /// <param name="input">The specified input</param>
+        /// <param name="maxDiff">The maximal difference</param>
+        /// <returns></returns>
+        public static Vector3 Randomize(Vector3 input, int maxDiff)
+        {
+            input.X = Randomize(input.X, maxDiff);
+            input.Y = Randomize(input.Y, maxDiff);
+            input.Z = Randomize(input.Z, maxDiff);
+
+            return input;
+        }
+
+        /// <summary>
+        /// Randomizes a <see cref="float"/>
+        /// </summary>
+        /// <param name="input">The specified input</param>
+        /// <param name="maxDiff">The maximal difference</param>
+        /// <returns></returns>
+        public static float Randomize(float input, int maxDiff)
+        {
+            var b = Random.Next(0, 1) == 0;
+            var random = Random.Next(0, maxDiff);
+
+            return b ? input + random : input - random;
         }
 
         /// <summary>

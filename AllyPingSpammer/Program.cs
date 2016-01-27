@@ -14,6 +14,11 @@
     internal class Program
     {
         /// <summary>
+        /// The <see cref="Random"/> instance
+        /// </summary>
+        internal static readonly Random Random = new Random(Variables.TickCount);
+
+        /// <summary>
         /// The entry point of the assembly
         /// </summary>
         /// <param name="args">The empty string array</param>
@@ -30,14 +35,15 @@
                     var shouldRandomize1 = false;
                     var shouldRandomize2 = false;
                     var shouldAssign = false;
-                    var random = new Random(Variables.TickCount);
                     var root = new Menu(Header, "[ST] Ally Ping Spammer", true).Attach();
                     var active = root.Add(new MenuBool(Header + "_active", "Active"));
                     var hero = root.Add(new MenuList<string>(Header + "_hero", "Ally to be spammed", GameObjects.AllyHeroes.Where(ally => !ally.IsMe).Select(ally => ally.ChampionName())));
-                    var delay = root.Add(new MenuSlider(Header + "_delay", "Delay between attempts", 1200, 200, 5000));
+                    var delay = root.Add(new MenuSlider(Header + "_delay", "Delay between attempts", 4500, 200, 10000));
                     var randomizer1 = root.Add(new MenuBool(Header + "_randomize1", "^ Randomize delay"));
                     var ping = root.Add(new MenuList<PingCategory>(Header + "_pingtype", nameof(PingCategory)));
-                    var randomizer2 = root.Add(new MenuBool(Header + "_randomize2", "^ Randomize " + nameof(PingCategory)));
+                    var randomizer2 = root.Add(new MenuBool(Header + "_randomize2", "^ Randomize " + nameof(PingCategory), true));
+                    var normalization = root.Add(new MenuBool(Header + "_normalization", "Normalize click points", true));
+                    var difference = root.Add(new MenuSlider(Header + "_difference", "^ Maximal difference", 200, 20, 800));
                     root.AddSeparator("Made by Spark");
 
                     var operation = new TickOperation(
@@ -55,7 +61,14 @@
 
                                 if (position.HasValue)
                                 {
-                                    Game.SendPing(ping.SelectedValue, position.Value);
+                                    var pos = position.Value;
+
+                                    if (normalization.Value)
+                                    {
+                                        pos = Helper.Randomize(pos, difference.Value);
+                                    }
+
+                                    Game.SendPing(ping.SelectedValue, pos);
                                 }
 
                                 if (randomizer1.Value)
@@ -77,14 +90,14 @@
                             if (shouldRandomize1)
                             {
                                 shouldRandomize1 = false;
-                                operation.TickDelay = delay.Value = random.Next(200, 5000);
+                                operation.TickDelay = delay.Value = Random.Next(200, 5000);
                             }
 
                             if (shouldRandomize2)
                             {
                                 shouldRandomize2 = false;
                                 var array = Enum.GetValues(typeof(PingCategory));
-                                ping.SelectedValue = (PingCategory)array.GetValue(random.Next(0, array.Length - 1));
+                                ping.SelectedValue = (PingCategory)array.GetValue(Random.Next(0, array.Length - 1));
                             }
 
                             if (!shouldAssign)
